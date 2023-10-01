@@ -3,9 +3,9 @@
 namespace App\Command;
 
 use App\DataProvider\FileLineDataProvider;
-use App\Filters\MatchFilter;
-use App\Filters\RegexFilter;
-use App\Filters\StartLimitFilter;
+use App\Filter\MatchFilter;
+use App\Filter\RegexFilter;
+use App\Filter\StartLimitFilter;
 
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
