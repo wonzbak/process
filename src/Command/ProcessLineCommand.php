@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\DataProvider\FileLineDataProvider;
+use App\Filters\RegexFilter;
 use App\Filters\StartLimitFilter;
 
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -32,6 +33,7 @@ class ProcessLineCommand extends Command
             ->addArgument('file', InputArgument::REQUIRED, 'file to process')
             ->addOption('start', 's', InputOption::VALUE_REQUIRED, 'First line to process')
             ->addOption('limit', 'l', InputOption::VALUE_REQUIRED, 'Last line to process')
+            ->addOption('regex', 'r', InputOption::VALUE_REQUIRED, 'Regex filter')
         ;
     }
 
@@ -46,15 +48,21 @@ class ProcessLineCommand extends Command
 
         $start = $input->getOption('start');
         $limit = $input->getOption('limit');
+        $regex = $input->getOption('regex');
 
         if ($io->isVerbose()) {
             $io->comment("start: $start");
             $io->comment("limit: $limit");
+            $io->comment("regex: $regex");
         }
 
         $pipeline = take($this->fileLineDataProvider->provide($filenameToProcess));
         if ($start || $limit) {
             $pipeline->filter(new StartLimitFilter($start, $limit));
+        }
+
+        if (!empty($regex)) {
+            $pipeline->filter(new RegexFilter($regex));
         }
 
         foreach ($pipeline as $line) {
