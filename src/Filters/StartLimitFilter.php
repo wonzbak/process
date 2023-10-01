@@ -15,9 +15,8 @@ class StartLimitFilter
 
     public function __invoke(string $line): bool
     {
-        //dump("filter: $line");
         $this->current++;
-        //echo "current: " . $this->current . "\n";
+
         if (isset($this->start) && $this->current < $this->start) {
             return false;
         }

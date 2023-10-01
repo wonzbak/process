@@ -4,10 +4,12 @@ namespace App\Command;
 
 use App\DataProvider\FileLineDataProvider;
 use App\Filters\StartLimitFilter;
+
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use function Pipeline\take;
@@ -28,24 +30,30 @@ class ProcessLineCommand extends Command
     {
         $this
             ->addArgument('file', InputArgument::REQUIRED, 'file to process')
+            ->addOption('start', 's', InputOption::VALUE_REQUIRED, 'First line to process')
+            ->addOption('limit', 'l', InputOption::VALUE_REQUIRED, 'Last line to process')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $filenametoProcess = $input->getArgument('file');
+        $filenameToProcess = $input->getArgument('file');
 
-        if ($filenametoProcess) {
-            $io->note(sprintf('File to process: %s', $filenametoProcess));
+        if ($filenameToProcess) {
+            $io->note(sprintf('File to process: %s', $filenameToProcess));
         }
 
-        $start = 2;
-        $limit = 7;
-        
-        $pipeline = take($this->fileLineDataProvider->provide($filenametoProcess));
+        $start = $input->getOption('start');
+        $limit = $input->getOption('limit');
 
-        if (isset($start, $end)) {
+        if ($io->isVerbose()) {
+            $io->comment("start: $start");
+            $io->comment("limit: $limit");
+        }
+
+        $pipeline = take($this->fileLineDataProvider->provide($filenameToProcess));
+        if ($start || $limit) {
             $pipeline->filter(new StartLimitFilter($start, $limit));
         }
 
