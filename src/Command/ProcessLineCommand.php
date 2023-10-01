@@ -22,8 +22,9 @@ use function Pipeline\take;
 class ProcessLineCommand extends Command
 {
     public function __construct(
-            private readonly FileLineDataProvider $fileLineDataProvider
-    ) {
+        private readonly FileLineDataProvider $fileLineDataProvider
+    )
+    {
         parent::__construct();
     }
 
@@ -34,7 +35,7 @@ class ProcessLineCommand extends Command
             ->addOption('start', 's', InputOption::VALUE_REQUIRED, 'First line to process')
             ->addOption('limit', 'l', InputOption::VALUE_REQUIRED, 'Last line to process')
             ->addOption('regex', 'r', InputOption::VALUE_REQUIRED, 'Regex filter')
-        ;
+            ->addOption('count', 'c', InputOption::VALUE_NONE, 'Count line');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -49,11 +50,13 @@ class ProcessLineCommand extends Command
         $start = $input->getOption('start');
         $limit = $input->getOption('limit');
         $regex = $input->getOption('regex');
+        $count = $input->getOption('count');
 
         if ($io->isVerbose()) {
             $io->comment("start: $start");
             $io->comment("limit: $limit");
             $io->comment("regex: $regex");
+            $io->comment("count: ". intval($count));
         }
 
         $pipeline = take($this->fileLineDataProvider->provide($filenameToProcess));
@@ -65,9 +68,14 @@ class ProcessLineCommand extends Command
             $pipeline->filter(new RegexFilter($regex));
         }
 
-        foreach ($pipeline as $line) {
-            echo "$line\n";
+        if ($count) {
+            echo "{$pipeline->count()}\n";
+        } else {
+            foreach ($pipeline as $line) {
+                echo "$line\n";
+            }
         }
+
 
         $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
 
