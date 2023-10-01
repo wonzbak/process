@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\DataProvider\FileLineDataProvider;
+use App\Filters\MatchFilter;
 use App\Filters\RegexFilter;
 use App\Filters\StartLimitFilter;
 
@@ -35,6 +36,8 @@ class ProcessLineCommand extends Command
             ->addOption('start', 's', InputOption::VALUE_REQUIRED, 'First line to process')
             ->addOption('limit', 'l', InputOption::VALUE_REQUIRED, 'Last line to process')
             ->addOption('regex', 'r', InputOption::VALUE_REQUIRED, 'Regex filter')
+            ->addOption('match', 'm', InputOption::VALUE_REQUIRED, 'Match filter')
+            ->addOption('match-strict', 'M', InputOption::VALUE_REQUIRED, 'Match filter strict mode')
             ->addOption('count', 'c', InputOption::VALUE_NONE, 'Count line');
     }
 
@@ -50,12 +53,16 @@ class ProcessLineCommand extends Command
         $start = $input->getOption('start');
         $limit = $input->getOption('limit');
         $regex = $input->getOption('regex');
+        $match = $input->getOption('match');
+        $matchStrict = $input->getOption('match-strict');
         $count = $input->getOption('count');
 
         if ($io->isVerbose()) {
             $io->comment("start: $start");
             $io->comment("limit: $limit");
             $io->comment("regex: $regex");
+            $io->comment("match: $match");
+            $io->comment("match-strict: $matchStrict");
             $io->comment("count: ". intval($count));
         }
 
@@ -68,6 +75,14 @@ class ProcessLineCommand extends Command
             $pipeline->filter(new RegexFilter($regex));
         }
 
+        if (!empty($match)) {
+            $pipeline->filter(new MatchFilter($match));
+        }
+
+        if (!empty($matchStrict)) {
+            $pipeline->filter(new MatchFilter($matchStrict, true));
+        }
+
         if ($count) {
             echo "{$pipeline->count()}\n";
         } else {
@@ -75,9 +90,6 @@ class ProcessLineCommand extends Command
                 echo "$line\n";
             }
         }
-
-
-        $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
 
         return Command::SUCCESS;
     }
